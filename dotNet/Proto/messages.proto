@@ -1,0 +1,43 @@
+option optimize_for = SPEED;
+
+message MetricSetup {
+    required int32 Id = 1;
+    required int32 MetricId = 2;
+    required string EntityTypes = 3;
+}
+
+    enum Modification {
+        NONE = 0;
+        ADDED = 1;
+        UPDATED = 2;
+        DELETED = 3;
+    }
+
+
+message MetricSetupChangedEvent {
+
+    required MetricSetup MetricSetup = 1;
+    required Modification Modification = 2 [default = NONE];
+    required int32 AccountId = 3;
+}
+
+message CalculateMetricCommand {
+    required int32 AccountId = 1;
+    required MetricSetup MetricSetup = 2;
+    repeated int32 TargetIds = 3 [packed = true];
+    required string EventId = 4;
+    required string CommandId = 5;
+}
+
+message Target {
+	required int32 Id = 1;
+	required string EntityType = 2;
+}
+
+message CalculateMetricCommandExtended {
+    required int32 AccountId = 1;
+    required MetricSetup MetricSetup = 2;
+    repeated Target Targets = 3;
+    required string EventId = 4;
+    required string CommandId = 5;
+}
