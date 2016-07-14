@@ -91,11 +91,15 @@ function measureThriftDeserializeCalculateMetricCommandExtended() {
 }
 
 function measureProtoV3SerializeCalculateMetricCommandExtended() {
+    var buffers = [];
+
     measure(() => {
         for (let i = 0; i < commands.length; i++) {
-            proto3.serializeCalculateMetricCommandExtended(commands[i]);
+            buffers.push(proto3.serializeCalculateMetricCommandExtended(commands[i]));
         }
     }, 'proto3 >> serialize CalculateMetricCommandExtended');
+
+    console.log(buffers.length);
 }
 
 function measureProtoV3DeserializeCalculateMetricCommandExtended() {
@@ -108,21 +112,53 @@ function measureProtoV3DeserializeCalculateMetricCommandExtended() {
     }, 'proto3 >> deserialize CalculateMetricCommandExtended');
 }
 
+function measureJSONSerializeCalculateMetricCommandExtended() {
+    var buffers = [];
+
+    measure(() => {
+        for (let i = 0; i < commands.length; i++) {
+            var command = commands[i];
+            buffers.push(new Buffer(JSON.stringify({
+                accountId: command.accountId,
+                eventId: command.eventId,
+                commandId: command.commandId,
+                metricSetup: command.metricSetup,
+                targets: command.targets.map(x => ({id: x.id, entityType: x.entityType}))
+            })));
+        }
+    }, 'JSON >> serialize CalculateMetricCommandExtended')
+
+    console.log(buffers.length);
+}
+
+function measureJSONDeserializeCalculateMetricCommandExtended() {
+    var strings = commands.map(x => new Buffer(JSON.stringify(x)));
+
+    measure(() => {
+        for (let i = 0; i < strings.length; i++) {
+            JSON.parse(strings[i].toString());
+        }
+    }, 'JSON >> deserialize CalculateMetricCommandExtended');
+}
+
 // measureThriftSerializeMetricSetup();
 // measureProtoSerializeMetricSetup();
 // measureThriftSerializeMetricSetup();
 // measureProtoSerializeMetricSetup();
 
-measureThriftSerializeCalculateMetricCommandExtended();
-measureProtoSerializeCalculateMetricCommandExtended();
+//measureThriftSerializeCalculateMetricCommandExtended();
+//measureProtoSerializeCalculateMetricCommandExtended();
 measureProtoV3SerializeCalculateMetricCommandExtended();
-measureThriftSerializeCalculateMetricCommandExtended();
-measureProtoSerializeCalculateMetricCommandExtended();
+measureJSONSerializeCalculateMetricCommandExtended();
+//measureThriftSerializeCalculateMetricCommandExtended();
+//measureProtoSerializeCalculateMetricCommandExtended();
 measureProtoV3SerializeCalculateMetricCommandExtended();
+measureJSONSerializeCalculateMetricCommandExtended();
 
-measureThriftDeserializeCalculateMetricCommandExtended();
-measureProtoDeserializeCalculateMetricCommandExtended();
-measureProtoV3DeserializeCalculateMetricCommandExtended();
-measureThriftDeserializeCalculateMetricCommandExtended();
-measureProtoDeserializeCalculateMetricCommandExtended();
-measureProtoV3DeserializeCalculateMetricCommandExtended();
+//measureThriftDeserializeCalculateMetricCommandExtended();
+//measureProtoDeserializeCalculateMetricCommandExtended();
+//measureProtoV3DeserializeCalculateMetricCommandExtended();
+//measureThriftDeserializeCalculateMetricCommandExtended();
+//measureProtoDeserializeCalculateMetricCommandExtended();
+//measureProtoV3DeserializeCalculateMetricCommandExtended();
+//measureJSONDeserializeCalculateMetricCommandExtended();
