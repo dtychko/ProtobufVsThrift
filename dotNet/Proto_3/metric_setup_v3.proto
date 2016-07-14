@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+option csharp_namespace = "Proto_3.Messages";
+
+message MetricSetup {
+    int32 id = 1;
+    int32 metricId = 2;
+    string entityTypes = 3;
+}

@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "avsc": "^4.1.6",
+    "google-protobuf": "^3.0.0-alpha.6.2",
     "protobufjs": "^5.0.1",
     "thrift": "^0.9.3"
   }

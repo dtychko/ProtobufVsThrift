@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option optimize_for = SPEED;
+
+import "metric_setup_v3.proto";
+
+message Target {
+    int32 id = 1;
+    string entityType = 2;
+}
+
+message CalculateMetricCommandExtended {
+    int32 accountId = 1;
+    MetricSetup metricSetup = 2;
+    repeated Target targets = 3;
+    string eventId = 4;
+    string commandId = 5;
+}

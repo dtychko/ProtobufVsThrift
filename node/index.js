@@ -1,15 +1,7 @@
 const {measure} = require('./utils');
 const proto = require('./proto');
 const thrift = require('./thrift');
-
-var buf = proto.serializeMetricSetup({
-    id: 1,
-    metricId: 2,
-    entityTypes: 'Bug,UserStory,Feature'
-});
-
-console.log(buf, buf.length);
-return;
+const proto3 = require('./google_proto3');
 
 const N = 1000;
 const M = 100;
@@ -37,7 +29,7 @@ for (let i = 1; i <= N; i++) {
 
     commands.push({
         accountId: i,
-        metricSetup: metricSetups[i],
+        metricSetup: metricSetups[i - 1],
         targets: targets,
         eventId: (2 * i).toString(),
         commandId: (3 * i).toString()
@@ -67,7 +59,17 @@ function measureProtoSerializeCalculateMetricCommandExtended() {
         for (let i = 0; i < commands.length; i++) {
             proto.serializeCalculateMetricCommandExtended(commands[i]);
         }
-    }, 'proto.serializeCalculateMetricCommandExtended');
+    }, 'proto >> serialize CalculateMetricCommandExtended');
+}
+
+function measureProtoDeserializeCalculateMetricCommandExtended() {
+    var buffers = commands.map(x => proto.serializeCalculateMetricCommandExtended(x));
+
+    measure(() => {
+        for (let i = 0; i < buffers.length; i++) {
+            proto.deserializeCalculateMetricCommandExtended(buffers[i]);
+        }
+    }, 'proto >> deserialize CalculateMetricCommandExtended');
 }
 
 function measureThriftSerializeCalculateMetricCommandExtended() {
@@ -75,7 +77,35 @@ function measureThriftSerializeCalculateMetricCommandExtended() {
         for (let i = 0; i < commands.length; i++) {
             thrift.serializeCalculateMetricCommandExtended(commands[i]);
         }
-    }, 'thrift.serializeCalculateMetricCommandExtended');
+    }, 'thrift >> serialize CalculateMetricCommandExtended');
+}
+
+function measureThriftDeserializeCalculateMetricCommandExtended() {
+    var buffers = commands.map(x => thrift.serializeCalculateMetricCommandExtended(x));
+
+    measure(() => {
+        for (let i = 0; i < buffers.length; i++) {
+            thrift.deserializeCalculateMetricCommandExtended(buffers[i]);
+        }
+    }, 'thrift >> deserialize CalculateMetricCommandExtended');
+}
+
+function measureProtoV3SerializeCalculateMetricCommandExtended() {
+    measure(() => {
+        for (let i = 0; i < commands.length; i++) {
+            proto3.serializeCalculateMetricCommandExtended(commands[i]);
+        }
+    }, 'proto3 >> serialize CalculateMetricCommandExtended');
+}
+
+function measureProtoV3DeserializeCalculateMetricCommandExtended() {
+    var buffers = commands.map(x => proto3.serializeCalculateMetricCommandExtended(x));
+
+    measure(() => {
+        for (let i = 0; i < buffers.length; i++) {
+            proto3.deserializeCalculateMetricCommandExtended(buffers[i]);
+        }
+    }, 'proto3 >> deserialize CalculateMetricCommandExtended');
 }
 
 // measureThriftSerializeMetricSetup();
@@ -85,5 +115,14 @@ function measureThriftSerializeCalculateMetricCommandExtended() {
 
 measureThriftSerializeCalculateMetricCommandExtended();
 measureProtoSerializeCalculateMetricCommandExtended();
+measureProtoV3SerializeCalculateMetricCommandExtended();
 measureThriftSerializeCalculateMetricCommandExtended();
 measureProtoSerializeCalculateMetricCommandExtended();
+measureProtoV3SerializeCalculateMetricCommandExtended();
+
+measureThriftDeserializeCalculateMetricCommandExtended();
+measureProtoDeserializeCalculateMetricCommandExtended();
+measureProtoV3DeserializeCalculateMetricCommandExtended();
+measureThriftDeserializeCalculateMetricCommandExtended();
+measureProtoDeserializeCalculateMetricCommandExtended();
+measureProtoV3DeserializeCalculateMetricCommandExtended();

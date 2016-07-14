@@ -28,5 +28,16 @@ module.exports = {
             commandId
         });
         return serialize(command);
+    },
+
+    deserializeCalculateMetricCommandExtended(buffer) {
+        var command = new CalculateMetricCommandExtended();
+        var transport = new thrift.TBufferedTransport();
+        transport.inBuf = buffer;
+        transport.readCursor = 0;
+        transport.writeCursor = buffer.length;
+        var protocol = new thrift.TBinaryProtocol(transport);
+        command.read(protocol);
+        return command;
     }
 };

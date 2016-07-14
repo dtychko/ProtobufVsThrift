@@ -19,5 +19,10 @@ module.exports = {
             eventId,
             commandId
         });
+        return command.toBuffer();
+    },
+
+    deserializeCalculateMetricCommandExtended(buffer) {
+        return CalculateMetricCommandExtended.decode(buffer);
     }
 };

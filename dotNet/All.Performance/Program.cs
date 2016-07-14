@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Google.Protobuf;
 using Messages;
 using ProtoBuf;
 using Thrift.Transport;
+using MetricSetup = Messages.MetricSetup;
 
 namespace All.Performance
 {
@@ -48,9 +50,8 @@ namespace All.Performance
 			Proto.DeserializeCalculateMetricCommand(Proto.SerializeCalculateMetricCommand(commands[0]));
 			Proto2.SerializeMetricSetup(metricSetups[0]);
 			Proto2.DeserializeCalculateMetricCommand(Proto2.SerializeCalculateMetricCommand(commands[0]));
-
-			metricSetups = metricSetups.Skip(1).ToList();
-			commands = commands.Skip(1).ToList();
+			Proto3.SerializeMetricSetup(metricSetups[0]);
+			Proto3.DeserializeCalculateMetricCommand(Proto3.SerializeCalculateMetricCommand(commands[0]));
 
 			Measure(() =>
 			{
@@ -58,21 +59,28 @@ namespace All.Performance
 				{
 					Thrift.SerializeMetricSetup(data);
 				}
-			}, " Thrift:MetricSetup");
+			}, " Thrift >> MetricSetup");
 			Measure(() =>
 			{
 				foreach (var data in metricSetups)
 				{
 					Proto.SerializeMetricSetup(data);
 				}
-			}, " Proto:MetricSetup");
+			}, " Proto >> MetricSetup");
 			Measure(() =>
 			{
 				foreach (var data in metricSetups)
 				{
 					Proto2.SerializeMetricSetup(data);
 				}
-			}, " Proto2:MetricSetup");
+			}, " Proto2 >> MetricSetup");
+			Measure(() =>
+			{
+				foreach (var data in metricSetups)
+				{
+					Proto3.SerializeMetricSetup(data);
+				}
+			}, " Proto v3 >> MetricSetup");
 
 			Measure(() =>
 			{
@@ -121,6 +129,22 @@ namespace All.Performance
 					Proto2.DeserializeCalculateMetricCommand(data);
 				}
 			}, " Proto2 >> Deserialize CalculateMetricCommand");
+
+			Measure(() =>
+			{
+				foreach (var data in commands)
+				{
+					Proto3.SerializeCalculateMetricCommand(data);
+				}
+			}, " Proto v3 >> Serialize CalculateMetricCommand");
+			dataPool = commands.Select(Proto3.SerializeCalculateMetricCommand).ToList();
+			Measure(() =>
+			{
+				foreach (var data in dataPool)
+				{
+					Proto3.DeserializeCalculateMetricCommand(data);
+				}
+			}, " Proto v3 >> Deserialize CalculateMetricCommand");
 		}
 
 		private static void Measure(Action action, string message, int iterationCount = 10)
@@ -277,6 +301,52 @@ namespace All.Performance
 				{
 					return Serializer.Deserialize<global::Proto2.Messages.CalculateMetricCommandExtended>(stream);
 				}
+			}
+		}
+
+		private static class Proto3
+		{
+			public static byte[] SerializeMetricSetup(MetricSetupData data)
+			{
+				var metricSetup = new Proto_3.Messages.MetricSetup
+				{
+					Id = data.Id,
+					MetricId = data.MetricId,
+					EntityTypes = data.EntityTypes
+				};
+
+				return metricSetup.ToByteArray();
+			}
+
+			public static byte[] SerializeCalculateMetricCommand(CalculateMetricCommandData data)
+			{
+				var command = new Proto_3.Messages.CalculateMetricCommandExtended
+				{
+					AccountId = data.AccountId,
+					MetricSetup =
+						new Proto_3.Messages.MetricSetup
+						{
+							Id = data.MetricSetup.Id,
+							MetricId = data.MetricSetup.MetricId,
+							EntityTypes = data.MetricSetup.EntityTypes
+						},
+					CommandId = data.CommandId,
+					EventId = data.EventId
+				};
+
+				command.Targets.Add(data.Targets.Select(t =>
+					new Proto_3.Messages.Target
+					{
+						Id = t.Id,
+						EntityType = t.EntityType
+					}));
+
+				return command.ToByteArray();
+			}
+
+			public static Proto_3.Messages.CalculateMetricCommandExtended DeserializeCalculateMetricCommand(byte[] data)
+			{
+				return Proto_3.Messages.CalculateMetricCommandExtended.Parser.ParseFrom(data);
 			}
 		}
 
